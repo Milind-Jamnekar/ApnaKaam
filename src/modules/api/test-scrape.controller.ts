@@ -8,11 +8,11 @@ export class TestScrapeController {
 
   @Get(':source')
   async testScrape(@Param('source') source: string) {
-    const jobs = await this.scraperService.runBySource(source);
-    return {
-      source,
-      count: jobs.length,
-      sample: jobs.slice(0, 3),
-    };
+    return this.scraperService.runBySource(source);
+  }
+
+  @Get()
+  async testAll() {
+    return this.scraperService.runAll();
   }
 }

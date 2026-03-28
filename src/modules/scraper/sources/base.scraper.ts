@@ -30,7 +30,7 @@ export abstract class BaseScraper {
     }
   }
 
-  generateFingerprint(
+  static generateFingerprint(
     title: string,
     company: string,
     location: string,

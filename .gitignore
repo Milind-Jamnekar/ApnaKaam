@@ -23,4 +23,5 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
-/generated/prisma
+/src/generated
+/generated
