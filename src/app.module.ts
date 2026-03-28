@@ -30,7 +30,6 @@ import { TelegramModule } from './modules/telegram/telegram.module';
         },
       }),
     }),
-    BullModule.registerQueue({ name: 'scraper-jobs' }),
     DatabaseModule,
     RedisModule,
     ScraperModule,
