@@ -1,12 +1,14 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { AppService } from './app.service';
-import { DatabaseModule } from './modules/database/database.module';
-import { ScraperModule } from './modules/scraper/scraper.module';
-import { ProcessingModule } from './modules/processing/processing.module';
-import { TelegramModule } from './modules/telegram/telegram.module';
 import { ApiModule } from './modules/api/api.module';
+import { DatabaseModule } from './modules/database/database.module';
+import { ProcessingModule } from './modules/processing/processing.module';
+import { RedisModule } from './modules/redis/redis.module';
+import { ScraperModule } from './modules/scraper/scraper.module';
+import { TelegramModule } from './modules/telegram/telegram.module';
 
 @Module({
   imports: [
@@ -19,7 +21,18 @@ import { ApiModule } from './modules/api/api.module';
             : undefined,
       },
     }),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get<string>('REDIS_HOST', 'localhost'),
+          port: config.get<number>('REDIS_PORT', 6379),
+        },
+      }),
+    }),
+    BullModule.registerQueue({ name: 'scraper-jobs' }),
     DatabaseModule,
+    RedisModule,
     ScraperModule,
     ProcessingModule,
     TelegramModule,

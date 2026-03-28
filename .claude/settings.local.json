@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx prisma:*)",
-      "Bash(pnpm prisma:*)"
+      "Bash(pnpm prisma:*)",
+      "Bash(pnpm run:*)"
     ]
   }
 }
