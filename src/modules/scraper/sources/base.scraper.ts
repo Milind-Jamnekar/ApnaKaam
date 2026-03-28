@@ -1,9 +1,9 @@
 import { createHash } from 'crypto';
-import { Logger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import { RawJobDto } from '../dto/raw-job.dto';
 
 export abstract class BaseScraper {
-  constructor(protected readonly logger: Logger) {}
+  constructor(protected readonly logger: PinoLogger) {}
 
   abstract getSourceName(): string;
   abstract fetchListings(): Promise<RawJobDto[]>;
@@ -11,12 +11,12 @@ export abstract class BaseScraper {
   async run(): Promise<RawJobDto[]> {
     const source = this.getSourceName();
     const start = Date.now();
-    this.logger.log(`Starting scraper: ${source}`);
+    this.logger.info(`Starting scraper: ${source}`);
 
     try {
       const jobs = await this.fetchListings();
       const duration = Date.now() - start;
-      this.logger.log(
+      this.logger.info(
         `Scraper ${source} finished: ${jobs.length} jobs fetched in ${duration}ms`,
       );
       return jobs;

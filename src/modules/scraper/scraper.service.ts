@@ -2,18 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { RawJobDto } from './dto/raw-job.dto';
 import { BaseScraper } from './sources/base.scraper';
+import { RemotiveScraper } from './sources/remotive.scraper';
 
 @Injectable()
 export class ScraperService {
-  private readonly scrapers: BaseScraper[] = [];
+  private readonly scrapers: BaseScraper[];
 
   constructor(
     @InjectPinoLogger(ScraperService.name)
     private readonly logger: PinoLogger,
-  ) {}
-
-  registerScraper(scraper: BaseScraper): void {
-    this.scrapers.push(scraper);
+    private readonly remotiveScraper: RemotiveScraper,
+  ) {
+    this.scrapers = [remotiveScraper];
   }
 
   async runAll(): Promise<RawJobDto[]> {
