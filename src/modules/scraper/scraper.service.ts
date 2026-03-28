@@ -3,6 +3,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { RawJobDto } from './dto/raw-job.dto';
 import { BaseScraper } from './sources/base.scraper';
 import { RemotiveScraper } from './sources/remotive.scraper';
+import { WeworkremotelyScraper } from './sources/weworkremotely.scraper';
 
 @Injectable()
 export class ScraperService {
@@ -12,8 +13,9 @@ export class ScraperService {
     @InjectPinoLogger(ScraperService.name)
     private readonly logger: PinoLogger,
     private readonly remotiveScraper: RemotiveScraper,
+    private readonly weworkremotelyScraper: WeworkremotelyScraper,
   ) {
-    this.scrapers = [remotiveScraper];
+    this.scrapers = [remotiveScraper, weworkremotelyScraper];
   }
 
   async runAll(): Promise<RawJobDto[]> {
