@@ -6,7 +6,9 @@ import {
 } from '../processing/processing.service';
 import { RawJobDto } from './dto/raw-job.dto';
 import { BaseScraper } from './sources/base.scraper';
+import { HnHiringScraper } from './sources/hn-hiring.scraper';
 import { RemotiveScraper } from './sources/remotive.scraper';
+import { WellfoundScraper } from './sources/wellfound.scraper';
 import { WeworkremotelyScraper } from './sources/weworkremotely.scraper';
 
 export interface ScrapeAndProcessResult extends ProcessingResult {
@@ -23,8 +25,15 @@ export class ScraperService {
     private readonly processingService: ProcessingService,
     private readonly remotiveScraper: RemotiveScraper,
     private readonly weworkremotelyScraper: WeworkremotelyScraper,
+    private readonly wellfoundScraper: WellfoundScraper,
+    private readonly hnHiringScraper: HnHiringScraper,
   ) {
-    this.scrapers = [remotiveScraper, weworkremotelyScraper];
+    this.scrapers = [
+      remotiveScraper,
+      weworkremotelyScraper,
+      wellfoundScraper,
+      hnHiringScraper,
+    ];
   }
 
   async runAll(): Promise<ScrapeAndProcessResult> {
