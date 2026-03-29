@@ -49,7 +49,7 @@ export class RemotiveScraper extends BaseScraper {
   }
 
   async fetchListings(): Promise<RawJobDto[]> {
-    const res = await fetch(REMOTIVE_API);
+    const res = await this.fetchWithTimeout(REMOTIVE_API);
     if (!res.ok) {
       throw new Error(`Remotive API returned ${res.status}`);
     }

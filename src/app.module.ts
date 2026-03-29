@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { AppService } from './app.service';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { ApiModule } from './modules/api/api.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { ProcessingModule } from './modules/processing/processing.module';
@@ -15,6 +16,17 @@ import { TelegramModule } from './modules/telegram/telegram.module';
     ConfigModule.forRoot({ isGlobal: true }),
     LoggerModule.forRoot({
       pinoHttp: {
+        customLogLevel: (_req, res) => {
+          if (res.statusCode >= 500) return 'error';
+          if (res.statusCode >= 400) return 'warn';
+          return 'info';
+        },
+        serializers: {
+          req: (req: { method: string; url: string }) => ({
+            method: req.method,
+            url: req.url,
+          }),
+        },
         transport:
           process.env.NODE_ENV !== 'production'
             ? { target: 'pino-pretty', options: { colorize: true } }
@@ -37,6 +49,6 @@ import { TelegramModule } from './modules/telegram/telegram.module';
     TelegramModule,
     ApiModule,
   ],
-  providers: [AppService],
+  providers: [AppService, AllExceptionsFilter],
 })
 export class AppModule {}

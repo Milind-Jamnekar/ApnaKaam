@@ -10,6 +10,8 @@ import { WeworkremotelyScraper } from './sources/weworkremotely.scraper';
 
 const SCRAPER_SOURCES = ['remotive', 'weworkremotely'] as const;
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const CLEANUP_JOB = 'cleanup';
 
 @Module({
   imports: [
@@ -44,6 +46,13 @@ export class ScraperModule implements OnModuleInit {
       this.logger.info(
         `Registered repeatable scrape job: ${source} (every 6h)`,
       );
+    }
+
+    if (!existingNames.has(CLEANUP_JOB)) {
+      await this.queue.add(CLEANUP_JOB, {}, { repeat: { every: ONE_DAY_MS } });
+      this.logger.info('Registered repeatable cleanup job (every 24h)');
+    } else {
+      this.logger.info('Repeatable job already registered: cleanup');
     }
   }
 }

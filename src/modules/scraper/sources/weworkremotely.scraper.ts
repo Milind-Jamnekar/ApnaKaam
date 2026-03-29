@@ -57,7 +57,7 @@ export class WeworkremotelyScraper extends BaseScraper {
   }
 
   async fetchListings(): Promise<RawJobDto[]> {
-    const res = await fetch(WWR_RSS);
+    const res = await this.fetchWithTimeout(WWR_RSS);
     if (!res.ok) {
       throw new Error(`WWR RSS returned ${res.status}`);
     }

@@ -1,17 +1,35 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: Redis;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    @InjectPinoLogger(RedisService.name)
+    private readonly logger: PinoLogger,
+    private readonly config: ConfigService,
+  ) {}
 
   onModuleInit() {
     this.client = new Redis({
       host: this.config.get<string>('REDIS_HOST', 'localhost'),
       port: this.config.get<number>('REDIS_PORT', 6379),
+      lazyConnect: true,
+    });
+
+    this.client.on('error', (err: Error) => {
+      this.logger.warn({ err }, 'Redis connection error');
+    });
+
+    this.client.on('reconnecting', () => {
+      this.logger.info('Redis reconnecting...');
+    });
+
+    void this.client.connect().catch(() => {
+      // initial connect failure is already logged via the error event
     });
   }
 

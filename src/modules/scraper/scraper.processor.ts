@@ -1,6 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { CleanupService } from '../processing/cleanup.service';
 import { ScraperService } from './scraper.service';
 
 @Processor('scraper-jobs')
@@ -9,11 +10,17 @@ export class ScraperProcessor extends WorkerHost {
     @InjectPinoLogger(ScraperProcessor.name)
     private readonly logger: PinoLogger,
     private readonly scraperService: ScraperService,
+    private readonly cleanupService: CleanupService,
   ) {
     super();
   }
 
   async process(job: Job): Promise<void> {
+    if (job.name === 'cleanup') {
+      await this.cleanupService.deactivateStaleJobs();
+      return;
+    }
+
     const source = job.name;
     const start = Date.now();
 
