@@ -2,11 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { Context, Markup } from 'telegraf';
 import { PreferenceSession } from './session.service';
 
+type InlineKeyboard = ReturnType<typeof Markup.inlineKeyboard>;
+
 export const STACK_OPTIONS = [
-  'nodejs', 'nestjs', 'typescript', 'express',
-  'postgresql', 'redis', 'mongodb', 'docker',
-  'kubernetes', 'aws', 'golang', 'python',
-  'graphql', 'microservices',
+  'nodejs',
+  'nestjs',
+  'typescript',
+  'express',
+  'postgresql',
+  'redis',
+  'mongodb',
+  'docker',
+  'kubernetes',
+  'aws',
+  'golang',
+  'python',
+  'graphql',
+  'microservices',
 ];
 
 export const LOCATION_OPTIONS = [
@@ -71,7 +83,7 @@ export class PreferenceFlowService {
 
   // ─── Keyboard builders ────────────────────────────────────────────────────
 
-  buildStackKeyboard(selected: string[]) {
+  buildStackKeyboard(selected: string[]): InlineKeyboard {
     const buttons = STACK_OPTIONS.map((opt) =>
       Markup.button.callback(
         selected.includes(opt) ? `✅ ${opt}` : opt,
@@ -91,7 +103,7 @@ export class PreferenceFlowService {
     return Markup.inlineKeyboard(rows);
   }
 
-  buildLocationKeyboard(selected: string[]) {
+  buildLocationKeyboard(selected: string[]): InlineKeyboard {
     const rows = LOCATION_OPTIONS.map((opt) => [
       Markup.button.callback(
         selected.includes(opt.value) ? `✅ ${opt.label}` : opt.label,
@@ -106,14 +118,14 @@ export class PreferenceFlowService {
     return Markup.inlineKeyboard(rows);
   }
 
-  buildSeniorityKeyboard() {
+  buildSeniorityKeyboard(): InlineKeyboard {
     const rows = SENIORITY_OPTIONS.map((opt) => [
       Markup.button.callback(opt.label, `pref:sen:${opt.value}`),
     ]);
     return Markup.inlineKeyboard(rows);
   }
 
-  buildConfirmKeyboard() {
+  buildConfirmKeyboard(): InlineKeyboard {
     return Markup.inlineKeyboard([
       [
         Markup.button.callback('Save ✅', 'pref:cfm:yes'),
@@ -152,7 +164,10 @@ export class PreferenceFlowService {
     });
   }
 
-  async editToConfirmStep(ctx: Context, session: PreferenceSession): Promise<void> {
+  async editToConfirmStep(
+    ctx: Context,
+    session: PreferenceSession,
+  ): Promise<void> {
     await ctx.editMessageText(this.confirmMessage(session), {
       parse_mode: 'HTML',
       ...this.buildConfirmKeyboard(),
