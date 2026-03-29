@@ -3,6 +3,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ProcessingModule } from '../processing/processing.module';
+import { TelegramModule } from '../telegram/telegram.module';
 import { ScraperProcessor } from './scraper.processor';
 import { ScraperService } from './scraper.service';
 import { RemotiveScraper } from './sources/remotive.scraper';
@@ -16,6 +17,7 @@ const CLEANUP_JOB = 'cleanup';
 @Module({
   imports: [
     ProcessingModule,
+    TelegramModule,
     BullModule.registerQueue({ name: 'scraper-jobs' }),
   ],
   providers: [

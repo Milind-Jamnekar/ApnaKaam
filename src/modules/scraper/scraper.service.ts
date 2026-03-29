@@ -53,7 +53,7 @@ export class ScraperService {
 
     if (!scraper) {
       this.logger.warn(`No scraper registered for source: ${sourceName}`);
-      return { scraped: 0, saved: 0, duplicates: 0, errors: 0 };
+      return { scraped: 0, saved: 0, duplicates: 0, errors: 0, savedIds: [] };
     }
 
     const rawJobs = await scraper.run();

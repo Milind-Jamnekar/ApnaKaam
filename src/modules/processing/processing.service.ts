@@ -13,6 +13,7 @@ export interface ProcessingResult {
   saved: number;
   duplicates: number;
   errors: number;
+  savedIds: string[];
 }
 
 @Injectable()
@@ -28,7 +29,12 @@ export class ProcessingService {
   ) {}
 
   async processJobs(rawJobs: RawJobDto[]): Promise<ProcessingResult> {
-    const result: ProcessingResult = { saved: 0, duplicates: 0, errors: 0 };
+    const result: ProcessingResult = {
+      saved: 0,
+      duplicates: 0,
+      errors: 0,
+      savedIds: [],
+    };
 
     for (const raw of rawJobs) {
       try {
@@ -54,14 +60,14 @@ export class ProcessingService {
           normalized.stackRaw,
         );
 
-        await this.prisma.$transaction(async (tx) => {
+        const savedJob = await this.prisma.$transaction(async (tx) => {
           const company = await tx.company.upsert({
             where: { name: normalized.companyName },
             create: { name: normalized.companyName },
             update: {},
           });
 
-          await tx.job.create({
+          return tx.job.create({
             data: {
               title: normalized.title,
               companyId: company.id,
@@ -80,10 +86,12 @@ export class ProcessingService {
               fingerprint,
               postedAt: normalized.postedAt,
             },
+            select: { id: true },
           });
         });
 
         await this.deduplicator.markAsSeen(fingerprint);
+        result.savedIds.push(savedJob.id);
         result.saved++;
       } catch (err) {
         // P2002 = unique constraint violation — URL already exists (race condition)

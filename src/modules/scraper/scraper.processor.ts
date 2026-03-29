@@ -2,6 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CleanupService } from '../processing/cleanup.service';
+import { RealtimeAlertService } from '../telegram/alerts/realtime-alert.service';
 import { ScraperService } from './scraper.service';
 
 @Processor('scraper-jobs')
@@ -11,6 +12,7 @@ export class ScraperProcessor extends WorkerHost {
     private readonly logger: PinoLogger,
     private readonly scraperService: ScraperService,
     private readonly cleanupService: CleanupService,
+    private readonly realtimeAlerts: RealtimeAlertService,
   ) {
     super();
   }
@@ -40,5 +42,9 @@ export class ScraperProcessor extends WorkerHost {
       },
       `Scrape job complete: ${source}`,
     );
+
+    if (result.savedIds.length > 0) {
+      await this.realtimeAlerts.notifyNewJobs(result.savedIds);
+    }
   }
 }
