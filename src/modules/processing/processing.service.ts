@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../database/prisma.service';
+import { RedisService } from '../redis/redis.service';
 import { RawJobDto } from '../scraper/dto/raw-job.dto';
 import { BaseScraper } from '../scraper/sources/base.scraper';
 import { DeduplicatorService } from './deduplicator.service';
@@ -23,6 +24,7 @@ export class ProcessingService {
     private readonly deduplicator: DeduplicatorService,
     private readonly classifier: StackClassifierService,
     private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
   ) {}
 
   async processJobs(rawJobs: RawJobDto[]): Promise<ProcessingResult> {
@@ -104,6 +106,11 @@ export class ProcessingService {
       result,
       `Processing complete: ${result.saved} saved, ${result.duplicates} duplicates, ${result.errors} errors`,
     );
+
+    if (result.saved > 0) {
+      await this.redis.delByPattern('cache:jobs:*');
+      await this.redis.del('cache:stats');
+    }
 
     return result;
   }
