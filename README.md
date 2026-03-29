@@ -57,13 +57,18 @@ pnpm install
 # 2. Copy environment variables
 cp .env.example .env
 
-# 3. Start PostgreSQL and Redis
+# 3. Get a Telegram bot token
+#    - Open Telegram and message @BotFather
+#    - Send /newbot and follow the prompts
+#    - Copy the token into .env as TELEGRAM_BOT_TOKEN=
+
+# 4. Start PostgreSQL and Redis
 docker compose up -d
 
-# 4. Run database migrations
+# 5. Run database migrations
 pnpm prisma migrate deploy
 
-# 5. Start in watch mode
+# 6. Start in watch mode
 pnpm start:dev
 ```
 
