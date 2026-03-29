@@ -15,7 +15,10 @@ export class SearchCommand extends BaseCommand {
 
   register(bot: Telegraf<Context>): void {
     bot.command('search', async (ctx) => {
-      const raw = ctx.message.text.replace(/^\/search\s*/i, '').trim();
+      const raw = ctx.message.text
+        .replace(/^\/search\s*/i, '')
+        .trim()
+        .slice(0, 100);
 
       if (!raw) {
         await ctx.reply(

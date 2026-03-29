@@ -70,6 +70,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.client.expire(key, ttlSeconds);
   }
 
+  async incr(key: string): Promise<number> {
+    return this.client.incr(key);
+  }
+
   async delByPattern(pattern: string): Promise<void> {
     let cursor = '0';
     do {

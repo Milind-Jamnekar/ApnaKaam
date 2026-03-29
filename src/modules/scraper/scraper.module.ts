@@ -4,6 +4,7 @@ import { Queue } from 'bullmq';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ProcessingModule } from '../processing/processing.module';
 import { TelegramModule } from '../telegram/telegram.module';
+import { ScraperHealthService } from './scraper-health.service';
 import { ScraperProcessor } from './scraper.processor';
 import { ScraperService } from './scraper.service';
 import { CareerPageScraper } from './sources/career-page.scraper';
@@ -33,6 +34,7 @@ const CLEANUP_JOB = 'cleanup';
   providers: [
     ScraperService,
     ScraperProcessor,
+    ScraperHealthService,
     RemotiveScraper,
     WeworkremotelyScraper,
     WellfoundScraper,

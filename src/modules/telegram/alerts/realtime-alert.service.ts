@@ -42,34 +42,49 @@ export class RealtimeAlertService {
         .filter(({ score }) => score >= 60)
         .map(({ job, score }) => ({ ...job, score }));
 
+      // Filter to jobs not yet sent
+      const unsent: (typeof matching)[number][] = [];
       for (const job of matching) {
-        try {
-          const alreadySent = await this.subscriptionService.hasAlertBeenSent(
-            sub.userId,
-            job.id,
-          );
-          if (alreadySent) continue;
+        const alreadySent = await this.subscriptionService.hasAlertBeenSent(
+          sub.userId,
+          job.id,
+        );
+        if (!alreadySent) unsent.push(job);
+      }
+      if (unsent.length === 0) continue;
 
-          const card = this.formatter.formatSingleJob(job, 1);
-          const text = `🆕 <b>New job matching your stack!</b>\n\n${card}\nReply /jobs for more matches`;
+      try {
+        // Send one batched message with all matching jobs
+        const jobCount = unsent.length;
+        const cards = unsent
+          .map((job, i) => this.formatter.formatSingleJob(job, i + 1))
+          .join('\n─────────────────────\n\n');
+        const heading =
+          jobCount === 1
+            ? '🆕 <b>New job matching your stack!</b>'
+            : `🆕 <b>${jobCount} new jobs matching your stack!</b>`;
+        const text = `${heading}\n\n${cards}\nReply /jobs for more matches`;
 
-          await this.telegram.sendMessage(sub.chatId, text);
+        await this.telegram.sendMessage(sub.chatId, text);
+
+        for (const job of unsent) {
           await this.subscriptionService.logAlert(
             sub.userId,
             job.id,
             'telegram-realtime',
           );
-          await this.delay(200);
-        } catch (err) {
-          this.logger.error(
-            {
-              err: err instanceof Error ? err : new Error(String(err)),
-              chatId: sub.chatId,
-            },
-            'Failed to send realtime alert',
-          );
         }
+      } catch (err) {
+        this.logger.error(
+          {
+            err: err instanceof Error ? err : new Error(String(err)),
+            chatId: sub.chatId,
+          },
+          'Failed to send realtime alert',
+        );
       }
+
+      await this.delay(200);
     }
   }
 

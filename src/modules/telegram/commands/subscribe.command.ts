@@ -92,6 +92,16 @@ export class SubscribeCommand extends BaseCommand {
         return;
       }
 
+      // Skip if already on the same frequency
+      const current = await this.subscriptionService.getActive(chatId);
+      if (current?.frequency === value) {
+        await ctx.editMessageText(
+          `You're already subscribed to <b>${FREQUENCY_LABELS[value]}</b>. No changes made.\n\nRun /settings to update your job preferences.`,
+          { parse_mode: 'HTML' },
+        );
+        return;
+      }
+
       await this.doSubscribeEdit(ctx, chatId, value);
     });
   }
@@ -101,6 +111,14 @@ export class SubscribeCommand extends BaseCommand {
     chatId: string,
     frequency: SubscriptionFrequency,
   ): Promise<void> {
+    const current = await this.subscriptionService.getActive(chatId);
+    if (current?.frequency === frequency) {
+      await ctx.reply(
+        `You're already subscribed to <b>${FREQUENCY_LABELS[frequency]}</b>. No changes made.\n\nRun /settings to update your job preferences.`,
+        { parse_mode: 'HTML' },
+      );
+      return;
+    }
     await this.subscriptionService.subscribe(chatId, frequency);
     await ctx.reply(this.confirmationText(frequency), { parse_mode: 'HTML' });
   }

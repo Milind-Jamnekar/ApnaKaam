@@ -3,6 +3,7 @@ import { Job } from 'bullmq';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CleanupService } from '../processing/cleanup.service';
 import { RealtimeAlertService } from '../telegram/alerts/realtime-alert.service';
+import { ScraperHealthService } from './scraper-health.service';
 import { ScraperService } from './scraper.service';
 
 @Processor('scraper-jobs')
@@ -13,6 +14,7 @@ export class ScraperProcessor extends WorkerHost {
     private readonly scraperService: ScraperService,
     private readonly cleanupService: CleanupService,
     private readonly realtimeAlerts: RealtimeAlertService,
+    private readonly health: ScraperHealthService,
   ) {
     super();
   }
@@ -42,6 +44,12 @@ export class ScraperProcessor extends WorkerHost {
       },
       `Scrape job complete: ${source}`,
     );
+
+    if (result.scraped === 0) {
+      await this.health.recordFailure(source);
+    } else {
+      await this.health.recordSuccess(source, result.scraped);
+    }
 
     if (result.savedIds.length > 0) {
       await this.realtimeAlerts.notifyNewJobs(result.savedIds);
