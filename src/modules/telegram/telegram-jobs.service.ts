@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma-client';
 import { PrismaService } from '../database/prisma.service';
+import {
+  RelevanceScorerService,
+  UserPrefs,
+} from '../processing/relevance-scorer.service';
 import { TelegramJob } from './formatters/job-message.formatter';
 
 export const PAGE_SIZE = 10;
+
+// How many recent DB rows to fetch before scoring + re-sorting
+const SCORE_POOL = 50;
 
 // Simple lookup used for search query parsing
 const TECH_CANONICAL: Record<string, string> = {
@@ -106,15 +113,38 @@ export interface ParsedSearch {
 
 @Injectable()
 export class TelegramJobsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly scorer: RelevanceScorerService,
+  ) {}
 
   async findForUser(
-    stackPrefs: string[],
-    locationPrefs: string[],
+    userPrefs: UserPrefs,
     page: number,
   ): Promise<JobQueryResult> {
-    const where = this.buildWhere(stackPrefs, locationPrefs, null);
-    return this.query(where, page);
+    const where = this.buildWhere(
+      userPrefs.stackPreferences,
+      userPrefs.locationPrefs,
+      userPrefs.seniorityPref,
+    );
+
+    const [pool, total] = await Promise.all([
+      this.prisma.job.findMany({
+        where,
+        include: { company: { select: { name: true } } },
+        orderBy: { postedAt: 'desc' },
+        take: SCORE_POOL,
+      }),
+      this.prisma.job.count({ where }),
+    ]);
+
+    const scored = this.scorer.scoreAndSort(pool, userPrefs);
+    const start = (page - 1) * PAGE_SIZE;
+    const jobs = scored
+      .slice(start, start + PAGE_SIZE)
+      .map(({ job, score }) => ({ ...job, score }));
+
+    return { jobs, total };
   }
 
   async search(parsed: ParsedSearch, page: number): Promise<JobQueryResult> {

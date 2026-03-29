@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../../database/prisma.service';
+import { RelevanceScorerService } from '../../processing/relevance-scorer.service';
 import { JobMessageFormatter } from '../formatters/job-message.formatter';
 import { SubscriptionService } from '../subscription.service';
 import { TelegramService } from '../telegram.service';
@@ -14,6 +15,7 @@ export class RealtimeAlertService {
     private readonly subscriptionService: SubscriptionService,
     private readonly formatter: JobMessageFormatter,
     private readonly telegram: TelegramService,
+    private readonly scorer: RelevanceScorerService,
   ) {}
 
   async notifyNewJobs(jobIds: string[]): Promise<void> {
@@ -29,11 +31,16 @@ export class RealtimeAlertService {
     });
 
     for (const sub of subscribers) {
-      const matching = jobs.filter(
-        (job) =>
-          sub.stackPreferences.length === 0 ||
-          job.stack.some((s) => sub.stackPreferences.includes(s)),
-      );
+      const userPrefs = {
+        stackPreferences: sub.stackPreferences,
+        locationPrefs: sub.locationPrefs,
+        seniorityPref: sub.seniorityPref,
+      };
+
+      const scored = this.scorer.scoreAndSort(jobs, userPrefs);
+      const matching = scored
+        .filter(({ score }) => score >= 60)
+        .map(({ job, score }) => ({ ...job, score }));
 
       for (const job of matching) {
         try {

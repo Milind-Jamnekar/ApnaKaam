@@ -2,6 +2,7 @@ import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { ProcessingModule } from '../processing/processing.module';
 import {
   DIGEST_QUEUE,
   DailyDigestService,
@@ -44,7 +45,7 @@ const commandProviders = [
 ];
 
 @Module({
-  imports: [BullModule.registerQueue({ name: DIGEST_QUEUE })],
+  imports: [BullModule.registerQueue({ name: DIGEST_QUEUE }), ProcessingModule],
   providers: [
     UserService,
     SessionService,

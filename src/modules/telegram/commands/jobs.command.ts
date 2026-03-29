@@ -46,8 +46,11 @@ export class JobsCommand extends BaseCommand {
     }
 
     const { jobs, total } = await this.jobsService.findForUser(
-      user.stackPreferences,
-      user.locationPrefs,
+      {
+        stackPreferences: user.stackPreferences,
+        locationPrefs: user.locationPrefs,
+        seniorityPref: user.seniorityPref,
+      },
       page,
     );
 
@@ -67,8 +70,11 @@ export class JobsCommand extends BaseCommand {
     if (!user) return;
 
     const { jobs, total } = await this.jobsService.findForUser(
-      user.stackPreferences,
-      user.locationPrefs,
+      {
+        stackPreferences: user.stackPreferences,
+        locationPrefs: user.locationPrefs,
+        seniorityPref: user.seniorityPref,
+      },
       page,
     );
 

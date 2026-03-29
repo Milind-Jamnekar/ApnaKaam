@@ -61,6 +61,7 @@ export class SubscriptionService {
       userId: string;
       stackPreferences: string[];
       locationPrefs: string[];
+      seniorityPref: string | null;
     }>
   > {
     const subs = await this.prisma.subscription.findMany({
@@ -72,6 +73,7 @@ export class SubscriptionService {
             telegramChatId: true,
             stackPreferences: true,
             locationPrefs: true,
+            seniorityPref: true,
             isActive: true,
           },
         },
@@ -85,6 +87,7 @@ export class SubscriptionService {
         userId: s.user.id,
         stackPreferences: s.user.stackPreferences,
         locationPrefs: s.user.locationPrefs,
+        seniorityPref: s.user.seniorityPref,
       }));
   }
 

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { LocationType } from '../../../generated/prisma-client';
+import { RelevanceScorerService } from '../../processing/relevance-scorer.service';
 
 export interface TelegramJob {
   id: string;
@@ -14,6 +15,7 @@ export interface TelegramJob {
   stack: string[];
   postedAt: Date | null;
   seniorityLevel: string | null;
+  score?: number;
 }
 
 @Injectable()
@@ -52,8 +54,12 @@ export class JobMessageFormatter {
     const stack = this.formatStack(job.stack);
     const age = this.relativeTime(job.postedAt);
     const url = job.url;
+    const badge =
+      job.score !== undefined
+        ? `${RelevanceScorerService.badge(job.score)} `
+        : '';
 
-    let line = `${index}. <b>${title}</b> — ${company}\n`;
+    let line = `${badge}${index}. <b>${title}</b> — ${company}\n`;
     line += `📍 ${location}`;
     if (salary) line += `  ${salary}`;
     line += `\n`;

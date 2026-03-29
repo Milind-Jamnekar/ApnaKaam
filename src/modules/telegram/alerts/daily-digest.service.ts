@@ -1,6 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { RelevanceScorerService } from '../../processing/relevance-scorer.service';
 import { JobMessageFormatter } from '../formatters/job-message.formatter';
 import { SubscriptionService } from '../subscription.service';
 import { TelegramService } from '../telegram.service';
@@ -17,6 +18,7 @@ export class DailyDigestService extends WorkerHost {
     private readonly jobsService: TelegramJobsService,
     private readonly formatter: JobMessageFormatter,
     private readonly telegram: TelegramService,
+    private readonly scorer: RelevanceScorerService,
   ) {
     super();
   }
@@ -81,18 +83,20 @@ export class DailyDigestService extends WorkerHost {
       userId: string;
       stackPreferences: string[];
       locationPrefs: string[];
+      seniorityPref: string | null;
     },
     type: 'daily' | 'weekly',
   ): Promise<void> {
     const hoursBack = type === 'daily' ? 24 : 168;
-    const { jobs, total } = await this.jobsService.findForUser(
-      sub.stackPreferences,
-      sub.locationPrefs,
-      1,
-    );
+    const userPrefs = {
+      stackPreferences: sub.stackPreferences,
+      locationPrefs: sub.locationPrefs,
+      seniorityPref: sub.seniorityPref,
+    };
+    const { jobs, total } = await this.jobsService.findForUser(userPrefs, 1);
 
-    const newJobs = jobs.filter((j) =>
-      this.isWithinHours(j.postedAt, hoursBack),
+    const newJobs = jobs.filter(
+      (j) => this.isWithinHours(j.postedAt, hoursBack) && (j.score ?? 0) >= 40,
     );
 
     if (newJobs.length === 0) return;
