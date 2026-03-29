@@ -6,6 +6,7 @@ import { ProcessingModule } from '../processing/processing.module';
 import { TelegramModule } from '../telegram/telegram.module';
 import { ScraperProcessor } from './scraper.processor';
 import { ScraperService } from './scraper.service';
+import { CareerPageScraper } from './sources/career-page.scraper';
 import { HnHiringScraper } from './sources/hn-hiring.scraper';
 import { RemotiveScraper } from './sources/remotive.scraper';
 import { WellfoundScraper } from './sources/wellfound.scraper';
@@ -16,7 +17,7 @@ const FAST_SOURCES = ['remotive', 'weworkremotely'] as const;
 // Sources that run every 12 hours (Playwright-based, heavier)
 const SLOW_SOURCES = ['wellfound'] as const;
 // Sources that run once daily
-const DAILY_SOURCES = ['hn-hiring'] as const;
+const DAILY_SOURCES = ['hn-hiring', 'career_page'] as const;
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
@@ -36,6 +37,7 @@ const CLEANUP_JOB = 'cleanup';
     WeworkremotelyScraper,
     WellfoundScraper,
     HnHiringScraper,
+    CareerPageScraper,
   ],
   exports: [ScraperService],
 })

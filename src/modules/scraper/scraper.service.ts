@@ -6,6 +6,7 @@ import {
 } from '../processing/processing.service';
 import { RawJobDto } from './dto/raw-job.dto';
 import { BaseScraper } from './sources/base.scraper';
+import { CareerPageScraper } from './sources/career-page.scraper';
 import { HnHiringScraper } from './sources/hn-hiring.scraper';
 import { RemotiveScraper } from './sources/remotive.scraper';
 import { WellfoundScraper } from './sources/wellfound.scraper';
@@ -27,12 +28,14 @@ export class ScraperService {
     private readonly weworkremotelyScraper: WeworkremotelyScraper,
     private readonly wellfoundScraper: WellfoundScraper,
     private readonly hnHiringScraper: HnHiringScraper,
+    private readonly careerPageScraper: CareerPageScraper,
   ) {
     this.scrapers = [
       remotiveScraper,
       weworkremotelyScraper,
       wellfoundScraper,
       hnHiringScraper,
+      careerPageScraper,
     ];
   }
 

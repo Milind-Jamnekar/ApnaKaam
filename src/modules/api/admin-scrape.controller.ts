@@ -5,6 +5,11 @@ import { ScraperService } from '../scraper/scraper.service';
 export class AdminScrapeController {
   constructor(private readonly scraperService: ScraperService) {}
 
+  @Post('career-pages')
+  async triggerCareerPages() {
+    return this.scraperService.runBySource('career_page');
+  }
+
   @Post(':source')
   async triggerSource(@Param('source') source: string) {
     return this.scraperService.runBySource(source);

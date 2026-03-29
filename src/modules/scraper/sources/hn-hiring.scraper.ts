@@ -309,7 +309,7 @@ export class HnHiringScraper extends BaseScraper {
 
     // Extract application URL — prefer from pipe fields, then scan full text
     const urlInParts = parts.slice(3).find((p) => /^https?:\/\//.test(p));
-    const urlsInText = fullText.match(URL_RE) ?? [];
+    const urlsInText: string[] = fullText.match(URL_RE) ?? [];
     const url =
       urlInParts ??
       urlsInText.find(

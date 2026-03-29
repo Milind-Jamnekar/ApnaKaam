@@ -25,3 +25,8 @@ pnpm-debug.log*
 
 /src/generated
 /generated
+
+# Prisma seed compiled output
+prisma/seed.js
+prisma/seed.js.map
+prisma/seed.d.ts
